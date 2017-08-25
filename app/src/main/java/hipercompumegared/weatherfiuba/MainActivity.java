@@ -1,5 +1,6 @@
 package hipercompumegared.weatherfiuba;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -13,8 +14,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
+
+import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,10 +34,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         String code = "6559994";
 
+
         cityText = (TextView) findViewById(R.id.cityText);
         condition = (TextView) findViewById(R.id.condition);
         temperature = (TextView) findViewById(R.id.temperature);
         press = (TextView) findViewById(R.id.pressure);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+                public void onClick(View view) {
+                    showLoadingToast();
+                    JSONWeatherTask task = new JSONWeatherTask();
+                    String code = "6559994";
+                    task.execute(code);
+                }
+        });
+        showLoadingToast();
 
         JSONWeatherTask task = new JSONWeatherTask();
         task.execute(code);
@@ -52,18 +68,22 @@ public class MainActivity extends AppCompatActivity {
         protected Weather doInBackground(String... params) {
             Weather weather = new Weather();
             String cityCode=params[0];
-            String data = ( (new WeatherHttpClient()).getWeatherData(cityCode));
-
             try {
-                weather = JSONWeatherParser.getWeather(data,cityCode);
+                String data = ((new WeatherHttpClient()).getWeatherData(cityCode));
 
-                // Let's retrieve the icon
-                //weather.iconData = ( (new WeatherHttpClient()).getImage(weather.currentCondition.getIcon()));
+                try {
+                    weather = JSONWeatherParser.getWeather(data, cityCode);
 
-            } catch (JSONException e) {
-                e.printStackTrace();
+                    // Let's retrieve the icon
+                    //weather.iconData = ( (new WeatherHttpClient()).getImage(weather.currentCondition.getIcon()));
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return weather;
+            }catch (UnknownHostException e){
+                return null;
             }
-            return weather;
 
         }
 
@@ -79,6 +99,10 @@ public class MainActivity extends AppCompatActivity {
                 imgView.setImageBitmap(img);
             }**/
 
+           if(weather==null){
+                showErrorInConnectionToast();
+               return;
+           }
             cityText.setText(weather.city.Name);
             condition.setText(weather.condition);
             temperature.setText("" + weather.temperature +"�C");
@@ -93,7 +117,23 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+    private void showLoadingToast(){
+        Context context = getApplicationContext();
+        CharSequence text = "Cargando...";
+        int duration = Toast.LENGTH_SHORT;
 
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+    }
+
+
+    private void showErrorInConnectionToast(){
+        Context context = getApplicationContext();
+        CharSequence text = "“No fue posible conectarse al servidor, \n" +"por favor reintente más tarde”";
+        int duration = Toast.LENGTH_LONG;
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will

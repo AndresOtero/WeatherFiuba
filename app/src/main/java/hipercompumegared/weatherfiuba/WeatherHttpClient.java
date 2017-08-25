@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.UnknownHostException;
+
 /*
  * Copyright (C) 2013 Surviving with Android (http://www.survivingwithandroid.com)
  *
@@ -39,7 +41,7 @@ public class WeatherHttpClient {
 
 
 	
-	public String getWeatherData(String code) {
+	public String getWeatherData(String code) throws  UnknownHostException {
 		HttpURLConnection con = null ;
 		InputStream is = null;
 
@@ -53,6 +55,7 @@ public class WeatherHttpClient {
 			// Let's read the response
 			StringBuffer buffer = new StringBuffer();
 			int status = con.getResponseCode();
+
 			is = con.getInputStream();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			String line = null;
@@ -63,7 +66,12 @@ public class WeatherHttpClient {
 			con.disconnect();
 			return buffer.toString();
 	    }
+		catch(UnknownHostException t) {
+
+			throw t;
+		}
 		catch(Throwable t) {
+
 			t.printStackTrace();
 		}
 		finally {
