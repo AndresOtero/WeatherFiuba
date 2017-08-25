@@ -152,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
         ImageView layout = (ImageView) findViewById(R.id.background);
         //layout.setBackgroundResource(drawable);
         layout.setBackgroundColor(drawable);
+
+
     }
 
 }
