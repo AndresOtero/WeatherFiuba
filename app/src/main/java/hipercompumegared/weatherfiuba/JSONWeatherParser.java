@@ -11,7 +11,6 @@
  */
 package hipercompumegared.weatherfiuba;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,18 +33,17 @@ import org.json.JSONObject;
 public class JSONWeatherParser {
 
 	public static Weather getWeather(String data,String code) throws JSONException  {
-		Weather weather = new Weather();
 
 		// We create out JSONObject from the data
 		JSONObject jObj = new JSONObject(data);
 
-		weather.pressure= getFloat("pressure",jObj);
-		weather.temperature= getFloat("temperature",jObj);
-		weather.condition= getString("weather",jObj);
+		Float pressure= getFloat("pressure",jObj);
+		Float temperature= getFloat("temperature",jObj);
+		String condition= getString("weather",jObj);
 
 
-		weather.city.Code=code;
-		weather.city.Name=getString("city",jObj);
+		String name =getString("city",jObj);
+        Weather weather = new Weather(condition,pressure,temperature,name,code);
 
 		
 		return weather;

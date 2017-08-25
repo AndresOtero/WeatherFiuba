@@ -1,18 +1,18 @@
 package hipercompumegared.weatherfiuba;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,21 +66,21 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Weather doInBackground(String... params) {
-            Weather weather = new Weather();
             String cityCode=params[0];
             try {
                 String data = ((new WeatherHttpClient()).getWeatherData(cityCode));
 
                 try {
-                    weather = JSONWeatherParser.getWeather(data, cityCode);
+                    Weather weather = JSONWeatherParser.getWeather(data, cityCode);
 
                     // Let's retrieve the icon
                     //weather.iconData = ( (new WeatherHttpClient()).getImage(weather.currentCondition.getIcon()));
 
+                    return weather;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                return weather;
+                return null;
             }catch (UnknownHostException e){
                 return null;
             }
@@ -103,11 +103,11 @@ public class MainActivity extends AppCompatActivity {
                 showErrorInConnectionToast();
                return;
            }
-            cityText.setText(weather.city.Name);
-            condition.setText(weather.condition);
-            temperature.setText("" + weather.temperature +"�C");
-            press.setText("" + weather.pressure+" hPa");
-
+            cityText.setText(weather.getCityName());
+            condition.setText(weather.getCondition());
+            temperature.setText("" + weather.getTemperature() +"°C");
+            press.setText("" + weather.getPressure() +" hPa");
+            setImage(ImageFinder.getImage(weather.status));
         }
 
 
@@ -148,4 +148,10 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+    public void setImage(int drawable){
+        ImageView layout = (ImageView) findViewById(R.id.background);
+        //layout.setBackgroundResource(drawable);
+        layout.setBackgroundColor(drawable);
+    }
+
 }
