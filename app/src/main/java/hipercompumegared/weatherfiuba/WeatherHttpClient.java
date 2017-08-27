@@ -26,11 +26,20 @@ public class WeatherHttpClient {
 
 
     public String getWeatherData(String cityCode) throws UnknownHostException {
+        return this.getStringData(BASE_URL +  cityCode);
+    }
+    public String getSuggestions(String prefix) throws UnknownHostException{
+        String result = this.getStringData(BASE_URL + "name/" + prefix);
+
+        return result;
+    }
+
+    public String getStringData(String url) throws UnknownHostException {
         HttpURLConnection con = null;
         InputStream is = null;
 
         try {
-            con = (HttpURLConnection) (new URL(BASE_URL + cityCode)).openConnection();
+            con = (HttpURLConnection) (new URL(url)).openConnection();
 
             con.setRequestMethod("GET");
             con.setDoInput(true);

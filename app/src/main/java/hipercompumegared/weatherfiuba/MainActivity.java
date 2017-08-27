@@ -20,7 +20,7 @@ import org.json.JSONException;
 
 import java.net.UnknownHostException;
 
-public class MainActivity extends AppCompatActivity implements OnTaskCompleted {
+public class MainActivity extends AppCompatActivity implements OnTaskCompleted, OnSuggestionsTaskCompleted {
 
     public static final String city_CODE = "6559994";
     private static final String TAG = "MainActivity";
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted {
     Toolbar toolbar;
     private MaterialSearchView searchView;
     private ImageView backgroundImageView;
-
+    private JSONSuggestionsTask suggestionsTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +51,12 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted {
         initSearchView();
         showLoadingToast();
         JSONWeatherTask task = new JSONWeatherTask(this);
+        suggestionsTask = new JSONSuggestionsTask(this);
+        suggestionsTask.execute("collado ");
+        //suggestionsTask.cancel(true);
+
         task.execute(city_CODE);
+
     }
 
     private void initSearchView(){
@@ -66,6 +71,10 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted {
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                if(newText.length() >= 4){
+                    //suggestionsTask.cancel(true);
+                    //suggestionsTask.execute(newText);
+                }
                 /*if(newText.toLowerCase().startsWith("bu")){
                     String[] query_suggestions = {"Buenos Aires","Buenos Días"};
                     searchView.setSuggestions(query_suggestions);
@@ -113,6 +122,11 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted {
         return true;
     }
 
+    @Override
+    public void OnSuggestionsTaskCompleted(String[] suggestions) {
+        searchView.setSuggestions(suggestions);
+    }
+
     private class JSONWeatherTask extends AsyncTask<String, Void, Weather> {
         private OnTaskCompleted listener;
 
@@ -130,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted {
                     Weather weather = JSONWeatherParser.getWeather(data, cityCode);
 
                     return weather;
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return null;
@@ -148,6 +162,44 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted {
         }
 
     }
+
+    private class JSONSuggestionsTask extends AsyncTask<String, Void, String[]> {
+        private OnSuggestionsTaskCompleted listener;
+
+        public JSONSuggestionsTask(OnSuggestionsTaskCompleted listener){
+            this.listener=listener;
+        }
+
+        @Override
+        protected String[] doInBackground(String... params) {
+            String prefix = params[0];
+            try {
+                String citiNames = ((new WeatherHttpClient()).getSuggestions(prefix));
+                Log.d(TAG,citiNames);
+                try {
+                    return JSONWeatherParser.getCityNames(citiNames);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        @Override
+        protected void onPostExecute(String[] citiNames) {
+            super.onPostExecute(citiNames);
+            if (!isCancelled()){
+                for(String s : citiNames){
+                    Log.d(TAG,s);
+                }
+                listener.OnSuggestionsTaskCompleted(citiNames);;
+            }
+        }
+
+    }
+
+
     @Override
     public void onTaskCompleted(Weather weather) {
         if (weather == null) {

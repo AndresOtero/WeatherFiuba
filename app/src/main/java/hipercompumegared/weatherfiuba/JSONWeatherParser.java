@@ -13,8 +13,12 @@ package hipercompumegared.weatherfiuba;
 
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /*
@@ -52,6 +56,19 @@ public class JSONWeatherParser {
 
 		return weather;
 	}
+
+	public static String[] getCityNames(String data)throws JSONException  {
+        List<String> cityNames = new ArrayList<String>();
+        JSONArray jArray = new JSONArray(data);
+        for (int i=0; i<jArray.length(); i++) {
+            JSONObject cityJSON = jArray.getJSONObject(i);
+            String name = cityJSON.getString("name");
+            cityNames.add(name);
+        }
+        String[] result = new String[cityNames.size()];
+        result = cityNames.toArray(result);
+        return result;
+    }
 	
 	
 
