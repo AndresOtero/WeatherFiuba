@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
         initSearchView();
         showLoadingToast();
         JSONWeatherTask task = new JSONWeatherTask(this);
-        suggestionsTask = new JSONSuggestionsTask(this);
-        suggestionsTask.execute("collado ");
+        //suggestionsTask = new JSONSuggestionsTask(this);
+        //suggestionsTask.execute("collado ");
         //suggestionsTask.cancel(true);
 
         task.execute(city_CODE);
@@ -72,8 +72,11 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
             @Override
             public boolean onQueryTextChange(String newText) {
                 if(newText.length() >= 4){
-                    //suggestionsTask.cancel(true);
-                    //suggestionsTask.execute(newText);
+                    if(suggestionsTask != null){
+                        suggestionsTask.cancel(true);
+                    }
+                    suggestionsTask = new JSONSuggestionsTask(MainActivity.this);
+                    suggestionsTask.execute(newText);
                 }
                 /*if(newText.toLowerCase().startsWith("bu")){
                     String[] query_suggestions = {"Buenos Aires","Buenos Días"};
@@ -100,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
         searchView.setEllipsize(true);
 
     }
+
     private void initFabButton() {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(new View.OnClickListener() {
