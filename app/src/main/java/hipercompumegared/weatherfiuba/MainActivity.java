@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements OnTaskCompleted, OnSuggestionsTaskCompleted {
 
-    public static final String city_CODE = "6559994";
+    public String city_CODE = "6559994";
     private static final String TAG = "MainActivity";
     private TextView cityText;
     private TextView condition;
@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
     private MaterialSearchView searchView;
     private ImageView backgroundImageView;
     private JSONSuggestionsTask suggestionsTask;
+    private Map<String, String> suggestions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +55,7 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
         initSearchView();
         showLoadingToast();
         JSONWeatherTask task = new JSONWeatherTask(this);
-        //suggestionsTask = new JSONSuggestionsTask(this);
-        //suggestionsTask.execute("collado ");
-        //suggestionsTask.cancel(true);
-
         task.execute(city_CODE);
-
     }
 
     private void initSearchView(){
@@ -68,7 +64,12 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //Do some magic
+                if(suggestions.containsKey(query)){
+                    Log.d(TAG,"ID seleccionado: " + suggestions.get(query));
+                    JSONWeatherTask task = new JSONWeatherTask(MainActivity.this);
+                    city_CODE = suggestions.get(query);
+                    task.execute( city_CODE);
+                }
                 return false;
             }
 
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
                         suggestionsTask.cancel(true);
                     }
                     suggestionsTask = new JSONSuggestionsTask(MainActivity.this);
-                    suggestionsTask.execute(newText);
+                    suggestionsTask.execute(newText.toLowerCase());
                 }
                 /*if(newText.toLowerCase().startsWith("bu")){
                     String[] query_suggestions = {"Buenos Aires","Buenos Días"};
@@ -131,6 +132,8 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
 
     @Override
     public void OnSuggestionsTaskCompleted(Map<String,String>  suggestions) {
+        this.suggestions = suggestions;
+
         String[] keys = new String[suggestions.size()];
         Object[] values = new Object[suggestions.size()];
         int index = 0;
