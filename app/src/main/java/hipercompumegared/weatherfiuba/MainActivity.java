@@ -1,18 +1,15 @@
 package hipercompumegared.weatherfiuba;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView condition;
     private TextView temperature;
     private TextView press;
-
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         String code = "6559994";
 
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         cityText = (TextView) findViewById(R.id.cityText);
         condition = (TextView) findViewById(R.id.condition);
@@ -52,12 +51,13 @@ public class MainActivity extends AppCompatActivity {
         showLoadingToast();
 
         JSONWeatherTask task = new JSONWeatherTask();
-        task.execute(code);
+        //task.execute(code);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -109,11 +109,6 @@ public class MainActivity extends AppCompatActivity {
             press.setText("" + weather.getPressure() +" hPa");
             setImage(ImageFinder.getImage(weather.status));
         }
-
-
-
-
-
 
 
     }
