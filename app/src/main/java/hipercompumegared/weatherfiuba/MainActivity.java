@@ -19,6 +19,9 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import org.json.JSONException;
 
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements OnTaskCompleted, OnSuggestionsTaskCompleted {
 
@@ -127,8 +130,20 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
     }
 
     @Override
-    public void OnSuggestionsTaskCompleted(String[] suggestions) {
-        searchView.setSuggestions(suggestions);
+    public void OnSuggestionsTaskCompleted(Map<String,String>  suggestions) {
+        String[] keys = new String[suggestions.size()];
+        Object[] values = new Object[suggestions.size()];
+        int index = 0;
+        for (Map.Entry<String, String> mapEntry : suggestions.entrySet()) {
+            keys[index] = mapEntry.getKey();
+            values[index] = mapEntry.getValue();
+            index++;
+        }
+
+        for(String s : keys){
+            Log.d(TAG,s);
+        }
+        searchView.setSuggestions(keys);
     }
 
     private class JSONWeatherTask extends AsyncTask<String, Void, Weather> {
@@ -167,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
 
     }
 
-    private class JSONSuggestionsTask extends AsyncTask<String, Void, String[]> {
+    private class JSONSuggestionsTask extends AsyncTask<String, Void,  Map<String,String>> {
         private OnSuggestionsTaskCompleted listener;
 
         public JSONSuggestionsTask(OnSuggestionsTaskCompleted listener){
@@ -175,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
         }
 
         @Override
-        protected String[] doInBackground(String... params) {
+        protected Map<String,String> doInBackground(String... params) {
             String prefix = params[0];
             try {
                 String citiNames = ((new WeatherHttpClient()).getSuggestions(prefix));
@@ -191,12 +206,9 @@ public class MainActivity extends AppCompatActivity implements OnTaskCompleted, 
             }
         }
         @Override
-        protected void onPostExecute(String[] citiNames) {
+        protected void onPostExecute( Map<String,String> citiNames) {
             super.onPostExecute(citiNames);
             if (!isCancelled()){
-                for(String s : citiNames){
-                    Log.d(TAG,s);
-                }
                 listener.OnSuggestionsTaskCompleted(citiNames);;
             }
         }
