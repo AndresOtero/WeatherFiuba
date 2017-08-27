@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,15 +20,17 @@ import org.json.JSONException;
 
 import java.net.UnknownHostException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnTaskCompleted {
 
     public static final String city_CODE = "6559994";
+    private static final String TAG = "MainActivity";
     private TextView cityText;
     private TextView condition;
     private TextView temperature;
     private TextView press;
     Toolbar toolbar;
     private MaterialSearchView searchView;
+    private ImageView backgroundImageView;
 
 
     @Override
@@ -40,16 +43,20 @@ public class MainActivity extends AppCompatActivity {
         condition = (TextView) findViewById(R.id.condition);
         temperature = (TextView) findViewById(R.id.temperature);
         press = (TextView) findViewById(R.id.pressure);
+        backgroundImageView = (ImageView) findViewById(R.id.background);
+        backgroundImageView.setImageResource(R.drawable.playa_5_dia_soleado);
+
+
         initFabButton();
         initSearchView();
         showLoadingToast();
-        JSONWeatherTask task = new JSONWeatherTask();
-        //task.execute(code);
+        JSONWeatherTask task = new JSONWeatherTask(this);
+        task.execute(city_CODE);
     }
 
     private void initSearchView(){
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
-        
+
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -90,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 showLoadingToast();
-                JSONWeatherTask task = new JSONWeatherTask();
+                JSONWeatherTask task = new JSONWeatherTask(MainActivity.this);
                 String code = city_CODE;
                 task.execute(code);
             }
@@ -107,6 +114,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class JSONWeatherTask extends AsyncTask<String, Void, Weather> {
+        private OnTaskCompleted listener;
+
+        public JSONWeatherTask(OnTaskCompleted listener){
+            this.listener=listener;
+        }
 
         @Override
         protected Weather doInBackground(String... params) {
@@ -116,9 +128,6 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     Weather weather = JSONWeatherParser.getWeather(data, cityCode);
-
-                    // Let's retrieve the icon
-                    //weather.iconData = ( (new WeatherHttpClient()).getImage(weather.currentCondition.getIcon()));
 
                     return weather;
                 } catch (JSONException e) {
@@ -135,26 +144,29 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Weather weather) {
             super.onPostExecute(weather);
-
-            /** if (weather.iconData != null && weather.iconData.length > 0) {
-             Bitmap img = BitmapFactory.decodeByteArray(weather.iconData, 0, weather.iconData.length);
-             imgView.setImageBitmap(img);
-             }**/
-
-            if (weather == null) {
-                showErrorInConnectionToast();
-                return;
-            }
-            cityText.setText(weather.getCityName());
-            condition.setText(weather.getCondition());
-            temperature.setText("" + weather.getTemperature() + "°C");
-            press.setText("" + weather.getPressure() + " hPa");
-            setImage(ImageFinder.getImage(weather.status));
+            listener.onTaskCompleted(weather);
         }
 
-
     }
+    @Override
+    public void onTaskCompleted(Weather weather) {
+        if (weather == null) {
+            showErrorInConnectionToast();
+            return;
+        }
+        cityText.setText(weather.getCityName());
 
+        condition.setText(weather.getCondition());
+
+        temperature.setText("" + weather.getTemperature() + "°C");
+        Log.d(TAG, weather.getTemperature() + "°C");
+
+        press.setText("" + weather.getPressure() + " hPa");
+        Log.d(TAG, weather.getPressure() + " hPa");
+
+        Log.d(TAG, weather.status.toString());
+        backgroundImageView.setImageResource(ImageFinder.getImage(weather.status));
+    }
     private void showLoadingToast() {
         Context context = getApplicationContext();
         CharSequence text = "Cargando...";
@@ -186,12 +198,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void setImage(int drawable) {
-        ImageView layout = (ImageView) findViewById(R.id.background);
-        //layout.setBackgroundResource(drawable);
-        layout.setBackgroundColor(drawable);
     }
 
 }

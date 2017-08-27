@@ -6,12 +6,10 @@
     android:layout_height="match_parent"
     tools:context="hipercompumegared.weatherfiuba.MainActivity">
     <ImageView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:id="@+id/background"
-        android:scaleType="fitXY"
-
-        />
+        android:scaleType="centerCrop"/>
 
 
     <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:paddingBottom="16dp" android:paddingLeft="16dp" android:paddingRight="16dp" android:paddingTop="160dp" tools:context=".MainActivity"

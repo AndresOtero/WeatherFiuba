@@ -11,6 +11,8 @@
  */
 package hipercompumegared.weatherfiuba;
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,7 +34,9 @@ import org.json.JSONObject;
  */
 public class JSONWeatherParser {
 
-	public static Weather getWeather(String data,String code) throws JSONException  {
+    private static final String TAG = "JSONWeatherParser";
+
+	public static Weather getWeather(String data, String code) throws JSONException  {
 
 		// We create out JSONObject from the data
 		JSONObject jObj = new JSONObject(data);
@@ -44,8 +48,8 @@ public class JSONWeatherParser {
 
 		String name =getString("city",jObj);
         Weather weather = new Weather(condition,pressure,temperature,name,code);
+		Log.d(TAG, weather.status.toString());
 
-		
 		return weather;
 	}
 	
