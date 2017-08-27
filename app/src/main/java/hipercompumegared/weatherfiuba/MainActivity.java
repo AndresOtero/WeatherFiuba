@@ -13,60 +13,104 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
+
 import org.json.JSONException;
 
 import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String city_CODE = "6559994";
     private TextView cityText;
     private TextView condition;
     private TextView temperature;
     private TextView press;
     Toolbar toolbar;
+    private MaterialSearchView searchView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String code = "6559994";
-
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         cityText = (TextView) findViewById(R.id.cityText);
         condition = (TextView) findViewById(R.id.condition);
         temperature = (TextView) findViewById(R.id.temperature);
         press = (TextView) findViewById(R.id.pressure);
+        initFabButton();
+        initSearchView();
+        showLoadingToast();
+        JSONWeatherTask task = new JSONWeatherTask();
+        //task.execute(code);
+    }
+
+    private void initSearchView(){
+        searchView = (MaterialSearchView) findViewById(R.id.search_view);
+        
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //Do some magic
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                /*if(newText.toLowerCase().startsWith("bu")){
+                    String[] query_suggestions = {"Buenos Aires","Buenos Días"};
+                    searchView.setSuggestions(query_suggestions);
+                }*/
+                return false;
+            }
+        });
+
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+                //Do some magic
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+                //Do some magic
+            }
+        });
+
+        String[] query_suggestions = {"Android","Ajax","Madrid","Sevilla"};
+        searchView.setSuggestions(query_suggestions);
+        searchView.setEllipsize(true);
+
+    }
+    private void initFabButton() {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
-                public void onClick(View view) {
-                    showLoadingToast();
-                    JSONWeatherTask task = new JSONWeatherTask();
-                    String code = "6559994";
-                    task.execute(code);
-                }
+            public void onClick(View view) {
+                showLoadingToast();
+                JSONWeatherTask task = new JSONWeatherTask();
+                String code = city_CODE;
+                task.execute(code);
+            }
         });
-        showLoadingToast();
-
-        JSONWeatherTask task = new JSONWeatherTask();
-        //task.execute(code);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem item = menu.findItem(R.id.action_search);
+        searchView.setMenuItem(item);
         return true;
     }
-
 
     private class JSONWeatherTask extends AsyncTask<String, Void, Weather> {
 
         @Override
         protected Weather doInBackground(String... params) {
-            String cityCode=params[0];
+            String cityCode = params[0];
             try {
                 String data = ((new WeatherHttpClient()).getWeatherData(cityCode));
 
@@ -81,38 +125,37 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 return null;
-            }catch (UnknownHostException e){
+            } catch (UnknownHostException e) {
                 return null;
             }
 
         }
 
 
-
-
         @Override
         protected void onPostExecute(Weather weather) {
             super.onPostExecute(weather);
 
-           /** if (weather.iconData != null && weather.iconData.length > 0) {
-                Bitmap img = BitmapFactory.decodeByteArray(weather.iconData, 0, weather.iconData.length);
-                imgView.setImageBitmap(img);
-            }**/
+            /** if (weather.iconData != null && weather.iconData.length > 0) {
+             Bitmap img = BitmapFactory.decodeByteArray(weather.iconData, 0, weather.iconData.length);
+             imgView.setImageBitmap(img);
+             }**/
 
-           if(weather==null){
+            if (weather == null) {
                 showErrorInConnectionToast();
-               return;
-           }
+                return;
+            }
             cityText.setText(weather.getCityName());
             condition.setText(weather.getCondition());
-            temperature.setText("" + weather.getTemperature() +"°C");
-            press.setText("" + weather.getPressure() +" hPa");
+            temperature.setText("" + weather.getTemperature() + "°C");
+            press.setText("" + weather.getPressure() + " hPa");
             setImage(ImageFinder.getImage(weather.status));
         }
 
 
     }
-    private void showLoadingToast(){
+
+    private void showLoadingToast() {
         Context context = getApplicationContext();
         CharSequence text = "Cargando...";
         int duration = Toast.LENGTH_SHORT;
@@ -122,13 +165,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void showErrorInConnectionToast(){
+    private void showErrorInConnectionToast() {
         Context context = getApplicationContext();
-        CharSequence text = "“No fue posible conectarse al servidor, \n" +"por favor reintente más tarde”";
+        CharSequence text = "“No fue posible conectarse al servidor, \n" + "por favor reintente más tarde”";
         int duration = Toast.LENGTH_LONG;
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -143,12 +187,11 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-    public void setImage(int drawable){
+
+    public void setImage(int drawable) {
         ImageView layout = (ImageView) findViewById(R.id.background);
         //layout.setBackgroundResource(drawable);
         layout.setBackgroundColor(drawable);
-
-
     }
 
 }
